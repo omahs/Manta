@@ -205,7 +205,7 @@ impl Contains<Call> for BaseFilter {
         // keep CallFilter with explicit true/false for documentation
         match call {
             // Explicitly DISALLOWED calls ( Pallet user extrinsics we don't want used WITH REASONING )
-            | Call::Assets(_) // Filter Assets. Assets should only be accessed by AssetManager.
+            //
             // For now disallow public proposal workflows, treasury workflows,
             // as well as external_propose and external_propose_majority.
             | Call::Democracy(
@@ -278,6 +278,7 @@ impl Contains<Call> for BaseFilter {
                 | pallet_parachain_staking::Call::execute_delegation_request{..}
                 | pallet_parachain_staking::Call::cancel_delegation_request{..})
             | Call::Balances(_)
+            | Call::Assets(_)
             | Call::Preimage(_)
             | Call::XTokens(orml_xtokens::Call::transfer {..}
                 | orml_xtokens::Call::transfer_multicurrencies {..})
