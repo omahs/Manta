@@ -15,8 +15,8 @@
 // along with Manta.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::{
-    weights, xcm_config::SelfReserve, AssetManager, Assets, Balances, Event,
-    NativeTokenExistentialDeposit, Origin, Runtime,
+    cDOL, weights, xcm_config::SelfReserve, AssetManager, Assets, Balances, Event,
+    NativeTokenExistentialDeposit, Origin, Runtime, DOL,
 };
 
 use manta_primitives::{
@@ -33,12 +33,12 @@ use frame_system::EnsureRoot;
 use xcm::VersionedMultiLocation;
 
 parameter_types! {
-    pub const AssetDeposit: Balance = 0; // Does not really matter as this will be only called by root
-    pub const AssetAccountDeposit: Balance = 0;
-    pub const ApprovalDeposit: Balance = 0;
+    pub const AssetDeposit: Balance = DOL;
+    pub const AssetAccountDeposit: Balance =  NativeTokenExistentialDeposit::get();
+    pub const ApprovalDeposit: Balance = 10 * cDOL;
     pub const AssetsStringLimit: u32 = 50;
-    pub const MetadataDepositBase: Balance = 0;
-    pub const MetadataDepositPerByte: Balance = 0;
+    pub const MetadataDepositBase: Balance = DOL;
+    pub const MetadataDepositPerByte: Balance = cDOL;
 }
 
 impl pallet_assets::Config for Runtime {
@@ -65,11 +65,34 @@ impl BalanceType for MantaAssetRegistry {
 impl AssetIdType for MantaAssetRegistry {
     type AssetId = DolphinAssetId;
 }
-impl AssetRegistry for MantaAssetRegistry {
+impl AssetRegistry<Runtime> for MantaAssetRegistry {
     type Metadata = AssetStorageMetadata;
     type Error = sp_runtime::DispatchError;
 
     fn create_asset(
+        who: Origin,
+        asset_id: DolphinAssetId,
+        admin: AccountId,
+        metadata: AssetStorageMetadata,
+        min_balance: Balance,
+    ) -> DispatchResult {
+        Assets::create(
+            who.clone(),
+            asset_id,
+            sp_runtime::MultiAddress::Id(admin),
+            min_balance,
+        )?;
+
+        Assets::set_metadata(
+            who,
+            asset_id,
+            metadata.name,
+            metadata.symbol,
+            metadata.decimals,
+        )
+    }
+
+    fn force_create_asset(
         asset_id: DolphinAssetId,
         metadata: AssetStorageMetadata,
         min_balance: Balance,
@@ -90,22 +113,24 @@ impl AssetRegistry for MantaAssetRegistry {
             metadata.symbol,
             metadata.decimals,
             metadata.is_frozen,
-        )?;
-
-        Assets::force_asset_status(
-            Origin::root(),
-            asset_id,
-            AssetManager::account_id().into(),
-            AssetManager::account_id().into(),
-            AssetManager::account_id().into(),
-            AssetManager::account_id().into(),
-            min_balance,
-            is_sufficient,
-            metadata.is_frozen,
         )
     }
 
-    fn update_asset_metadata(
+    fn update_metadata(
+        origin: Origin,
+        asset_id: &DolphinAssetId,
+        metadata: AssetStorageMetadata,
+    ) -> DispatchResult {
+        Assets::set_metadata(
+            origin,
+            *asset_id,
+            metadata.name,
+            metadata.symbol,
+            metadata.decimals,
+        )
+    }
+
+    fn force_update_metadata(
         asset_id: &DolphinAssetId,
         metadata: AssetStorageMetadata,
     ) -> DispatchResult {
@@ -116,6 +141,20 @@ impl AssetRegistry for MantaAssetRegistry {
             metadata.symbol,
             metadata.decimals,
             metadata.is_frozen,
+        )
+    }
+
+    fn mint_asset(
+        origin: Origin,
+        asset_id: &DolphinAssetId,
+        beneficiary: AccountId,
+        amount: Balance,
+    ) -> DispatchResult {
+        Assets::mint(
+            origin,
+            *asset_id,
+            sp_runtime::MultiAddress::Id(beneficiary),
+            amount,
         )
     }
 }

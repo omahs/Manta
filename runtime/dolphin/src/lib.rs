@@ -197,9 +197,6 @@ impl Contains<Call> for BaseFilter {
         // keep CallFilter with explicit true/false for documentation
         match call {
             // Explicitly DISALLOWED calls
-            | Call::Assets(_) // Filter Assets. Assets should only be accessed by AssetManager.
-            | Call::AssetManager(_) // AssetManager is also filtered because all of its extrinsics
-                                    // are callable only by Root, and Root calls skip this whole filter.
             // Currently, we filter `register_as_candidate` as this call is not yet ready for community.
             | Call::CollatorSelection( manta_collator_selection::Call::register_as_candidate{..})
             // For now disallow public proposal workflows, treasury workflows,
@@ -265,6 +262,8 @@ impl Contains<Call> for BaseFilter {
             | Call::Balances(_)
             | Call::XTokens(orml_xtokens::Call::transfer {..}
                 | orml_xtokens::Call::transfer_multicurrencies  {..})
+            | Call::Assets(_)
+            | Call::AssetManager(_)
             | Call::MantaPay(_)
             | Call::Preimage(_)
             | Call::Utility(_) => true,

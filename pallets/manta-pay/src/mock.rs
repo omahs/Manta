@@ -143,11 +143,29 @@ impl BalanceType for MantaAssetRegistry {
 impl AssetIdType for MantaAssetRegistry {
     type AssetId = StandardAssetId;
 }
-impl AssetRegistry for MantaAssetRegistry {
+impl AssetRegistry<Test> for MantaAssetRegistry {
     type Metadata = AssetStorageMetadata;
     type Error = sp_runtime::DispatchError;
 
     fn create_asset(
+        who: Origin,
+        asset_id: StandardAssetId,
+        admin: AccountId32,
+        metadata: AssetStorageMetadata,
+        min_balance: Balance,
+    ) -> DispatchResult {
+        Assets::create(who.clone(), asset_id, admin, min_balance)?;
+
+        Assets::set_metadata(
+            who,
+            asset_id,
+            metadata.name,
+            metadata.symbol,
+            metadata.decimals,
+        )
+    }
+
+    fn force_create_asset(
         asset_id: StandardAssetId,
         metadata: AssetStorageMetadata,
         min_balance: Balance,
@@ -168,22 +186,24 @@ impl AssetRegistry for MantaAssetRegistry {
             metadata.symbol,
             metadata.decimals,
             metadata.is_frozen,
-        )?;
-
-        Assets::force_asset_status(
-            Origin::root(),
-            asset_id,
-            AssetManager::account_id(),
-            AssetManager::account_id(),
-            AssetManager::account_id(),
-            AssetManager::account_id(),
-            min_balance,
-            is_sufficient,
-            metadata.is_frozen,
         )
     }
 
-    fn update_asset_metadata(
+    fn update_metadata(
+        origin: Origin,
+        asset_id: &StandardAssetId,
+        metadata: AssetStorageMetadata,
+    ) -> DispatchResult {
+        Assets::set_metadata(
+            origin,
+            *asset_id,
+            metadata.name,
+            metadata.symbol,
+            metadata.decimals,
+        )
+    }
+
+    fn force_update_metadata(
         asset_id: &StandardAssetId,
         metadata: AssetStorageMetadata,
     ) -> DispatchResult {
@@ -195,6 +215,15 @@ impl AssetRegistry for MantaAssetRegistry {
             metadata.decimals,
             metadata.is_frozen,
         )
+    }
+
+    fn mint_asset(
+        origin: Origin,
+        asset_id: &StandardAssetId,
+        beneficiary: AccountId32,
+        amount: Balance,
+    ) -> DispatchResult {
+        Assets::mint(origin, *asset_id, beneficiary, amount)
     }
 }
 

@@ -279,6 +279,7 @@ impl Contains<Call> for BaseFilter {
                 | pallet_parachain_staking::Call::cancel_delegation_request{..})
             | Call::Balances(_)
             | Call::Assets(_)
+            | Call::AssetManager(_)
             | Call::Preimage(_)
             | Call::XTokens(orml_xtokens::Call::transfer {..}
                 | orml_xtokens::Call::transfer_multicurrencies {..})

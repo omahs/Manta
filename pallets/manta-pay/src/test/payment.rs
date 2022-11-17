@@ -288,7 +288,7 @@ fn initialize_test(id: StandardAssetId, value: AssetValue) {
         min_balance: TEST_DEFAULT_ASSET_ED,
         is_sufficient: true,
     };
-    assert_ok!(MantaAssetRegistry::create_asset(
+    assert_ok!(MantaAssetRegistry::force_create_asset(
         id,
         metadata.into(),
         TEST_DEFAULT_ASSET_ED,
