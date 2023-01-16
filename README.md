@@ -47,7 +47,7 @@ Manta/Calamari/Dolphin's version number:
 where:
 
 * `<x>` is the major version, i.e. major product release.
-* `<y>` is the middle verison, i.e. adding major features.
+* `<y>` is the middle version, i.e. adding major features.
 * `<z>` is the minor version, i.e. performance improvement and bug fixes.
 
 ## Contributing
